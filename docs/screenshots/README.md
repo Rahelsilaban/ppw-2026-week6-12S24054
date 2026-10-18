@@ -1,7 +1,10 @@
-﻿Simpan screenshot manual di sini:
-- peminjaman-sukses.png
-- pengembalian-sukses.png
-- stok-nol.png
-- cookie-httponly.png
+﻿# Bukti screenshot SIPUS-Del Tahap 2
 
-Berkas gambar belum disediakan; langkah pengambilan ada di README utama.
+Screenshot pengguna pada 18 Oktober 2026:
+
+- [Peminjaman berhasil](peminjaman-sukses.png)
+- [Pengembalian berhasil](pengembalian-sukses.png)
+- [Penolakan stok nol](stok-nol.png)
+- [Inspeksi cookie HttpOnly](cookie-httponly.png)
+
+Keterangan masing-masing gambar tersedia pada bagian Bukti screenshot pengujian di [README proyek](../../README.md).

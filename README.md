@@ -1,4 +1,4 @@
-﻿# SIPUS-Del — Tahap 2
+# SIPUS-Del — Tahap 2
 
 Sistem Informasi Perpustakaan Kampus Del untuk tugas Minggu 6: katalog dan CRUD buku/kategori, transaksi peminjaman/pengembalian, statistik, pencarian, serta autentikasi pustakawan dengan sesi database.
 
@@ -127,6 +127,34 @@ Hasil verifikasi 18 Oktober 2026:
 | Blade | Kompilasi view berhasil |
 
 SQLite tidak membuktikan perilaku penguncian baris MySQL. Untuk pemeriksaan konkurensi manual, gunakan dua sesi browser/pustakawan dan buku dengan stok 1: kirim dua peminjaman dengan NIM berbeda hampir bersamaan. Hasil yang diharapkan: satu berhasil, satu ditolak, stok akhir 0, hanya satu pinjaman baru. Pengujian konkurensi MySQL ini belum dijalankan otomatis.
+
+### Bukti screenshot pengujian
+
+Screenshot berikut diambil pada 18 Oktober 2026 dari aplikasi yang berjalan di browser lokal.
+
+#### 1. Peminjaman berhasil
+
+Katalog menampilkan pesan **“Buku berhasil dipinjam. Batas pengembalian 7 hari.”** beserta statistik: 20 judul, 54 stok tersedia, 3 pinjaman aktif, dan 2 pengembalian.
+
+![Peminjaman berhasil pada katalog SIPUS-Del](docs/screenshots/peminjaman-sukses.png)
+
+#### 2. Pengembalian berhasil
+
+Halaman daftar peminjaman menampilkan pesan **“Buku berhasil dikembalikan.”** Transaksi `PJM-DEMO0002` untuk *Panduan Praktis Pemrograman* berstatus **Dikembalikan**, dengan tanggal kembali 18 Oktober 2026.
+
+![Pengembalian berhasil dan perubahan status peminjaman](docs/screenshots/pengembalian-sukses.png)
+
+#### 3. Penolakan stok nol
+
+Katalog menampilkan pesan **“Stok buku habis. Peminjaman ditolak.”** Buku *Dasar-Dasar Pemrograman* terlihat memiliki stok **0**, bukan nilai negatif.
+
+![Peminjaman ditolak ketika stok buku nol](docs/screenshots/stok-nol.png)
+
+#### 4. Inspeksi cookie HttpOnly
+
+DevTools pada tab **Application → Cookies → http://127.0.0.1:8000** memperlihatkan cookie email, sesi, remember, dan XSRF-TOKEN. Cookie email, sesi, dan remember memiliki tanda centang pada kolom HttpOnly serta SameSite **Lax**. Nama dan nilai cookie tampil terpotong karena lebar kolom; screenshot ini tidak digunakan untuk membuktikan tanggal kedaluwarsa secara lengkap.
+
+![Inspeksi atribut HttpOnly dan SameSite pada cookie aplikasi](docs/screenshots/cookie-httponly.png)
 
 ### Audit cookie dan sesi
 
