@@ -17,6 +17,13 @@ class LibrarySeederTest extends TestCase
 
         $this->assertDatabaseCount('kategoris', 5);
         $this->assertDatabaseCount('bukus', 20);
+        $this->assertDatabaseCount('peminjamans', 3);
+        $this->assertDatabaseHas('users', ['email' => 'pustakawan@del.ac.id']);
+        $this->assertDatabaseHas('bukus', ['stok' => 0]);
+        $this->assertDatabaseHas('bukus', ['stok' => 1]);
+        foreach (Buku::orderBy('id')->take(3)->withCount(['peminjamans as aktif' => fn ($query) => $query->where('status', 'dipinjam')])->get() as $index => $buku) {
+            $this->assertEquals($index + 1, $buku->stok + $buku->aktif);
+        }
         $this->assertSame(20, Buku::distinct()->count('isbn'));
 
         foreach (Kategori::withCount('bukus')->get() as $kategori) {
