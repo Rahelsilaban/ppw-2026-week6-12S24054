@@ -3,6 +3,16 @@
         <h1 class="h3 mb-0">Daftar Buku</h1>
         <a href="{{ route('buku.create') }}" class="btn btn-primary">Tambah Buku</a>
     </div>
+    <div class="row g-3 mb-4">
+        @foreach ($statistik as $label => $nilai)
+            <div class="col-md-3"><div class="card shadow-sm h-100"><div class="card-body"><div>{{ $label }}</div><strong class="fs-3">{{ $nilai }}</strong></div></div></div>
+        @endforeach
+    </div>
+    <form method="GET" action="{{ route('buku.index') }}" class="row g-2 mb-3">
+        <div class="col-md-6"><label for="search" class="form-label">Cari judul, penulis, atau ISBN</label><input id="search" name="search" class="form-control" value="{{ $search }}"></div>
+        <div class="col-md-4"><label for="kategori" class="form-label">Kategori</label><select id="kategori" name="kategori" class="form-select"><option value="">Semua kategori</option>@foreach ($kategoris as $kategori)<option value="{{ $kategori->id }}" @selected(request('kategori') == $kategori->id)>{{ $kategori->nama_kategori }}</option>@endforeach</select></div>
+        <div class="col-md-2 align-self-end"><button class="btn btn-primary">Cari</button></div>
+    </form>
     <div class="card shadow-sm mb-3">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -15,7 +25,7 @@
                             <td>{{ $buku->judul }}</td>
                             <td>{{ $buku->penulis }}</td>
                             <td>{{ $buku->kategori->nama_kategori }}</td>
-                            <td>{{ $buku->stok }}</td>
+                            <td>{{ $buku->stok }}<br><small class="text-secondary">{{ $buku->peminjamans_count }} kali dipinjam</small></td>
                             <td class="text-nowrap">
                                 <a href="{{ route('buku.show', $buku) }}" class="btn btn-sm btn-outline-primary" aria-label="Detail {{ $buku->judul }}">Detail</a>
                                 <a href="{{ route('buku.edit', $buku) }}" class="btn btn-sm btn-outline-secondary" aria-label="Edit {{ $buku->judul }}">Edit</a>

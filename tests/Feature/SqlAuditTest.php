@@ -15,7 +15,7 @@ class SqlAuditTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_book_index_uses_three_library_queries_for_ten_books(): void
+    public function test_book_index_uses_fixed_library_queries_for_ten_books(): void
     {
         $this->seed();
         $queries = [];
@@ -27,7 +27,7 @@ class SqlAuditTest extends TestCase
 
         $this->get(route('buku.index'))->assertOk()
             ->assertViewHas('bukus', fn ($bukus) => $bukus->count() === 10 && $bukus->total() === 20);
-        $this->assertCount(3, $queries);
+        $this->assertCount(6, $queries);
         $this->assertStringContainsString('count(*)', $queries[0]);
         $this->assertStringContainsString('limit 10', $queries[1]);
         $this->assertStringContainsString('"kategoris"."id" in (', $queries[2]);
