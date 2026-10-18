@@ -20,6 +20,13 @@
         <div class="container gap-3">
             <a class="navbar-brand fw-bold" href="{{ route('buku.index') }}">SIPUS-Del</a>
             <div class="navbar-nav flex-row gap-2">
+                @auth
+                    <a class="nav-link" href="{{ route('peminjaman.index') }}">Peminjaman</a>
+                    <span class="text-white small">{{ auth()->user()->name }}<br>Masuk: {{ session('login_timestamp', '—') }}</span>
+                    <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-outline-light">Keluar</button></form>
+                @else
+                    <a class="nav-link" href="{{ route('login') }}">Masuk</a>
+                @endauth
                 <a class="nav-link {{ request()->routeIs('buku.*') ? 'active' : '' }}" href="{{ route('buku.index') }}" @if(request()->routeIs('buku.*')) aria-current="page" @endif>Buku</a>
                 <a class="nav-link {{ request()->routeIs('kategori.*') ? 'active' : '' }}" href="{{ route('kategori.index') }}" @if(request()->routeIs('kategori.*')) aria-current="page" @endif>Kategori</a>
             </div>

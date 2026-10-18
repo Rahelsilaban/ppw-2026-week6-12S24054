@@ -14,7 +14,8 @@ class BukuController extends Controller
     public function index(Request $request): View
     {
         $filters = $request->validate(['search' => 'nullable|string|max:255', 'kategori' => 'nullable|integer|exists:kategoris,id']);
-        $search = trim($filters['search'] ?? '');
+        $search = trim($filters['search'] ?? ($request->has('search') ? '' : $request->session()->get('last_search', '')));
+        $request->session()->put('last_search', $search);
         $bukus = Buku::with('kategori')->withCount('peminjamans')
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('judul', 'like', '%'.$search.'%')

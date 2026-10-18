@@ -12,6 +12,12 @@ class LibraryControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(\App\Models\User::factory()->create());
+    }
+
     private function bookData(): array
     {
         return [

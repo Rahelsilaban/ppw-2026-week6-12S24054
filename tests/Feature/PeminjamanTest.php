@@ -11,6 +11,12 @@ class PeminjamanTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(\App\Models\User::factory()->create());
+    }
+
     private function pinjam(Buku $buku, string $nim = '12s24054')
     {
         return $this->post(route('peminjaman.pinjam', $buku), ['nim_peminjam' => $nim, 'nama_peminjam' => 'Elisabet']);
