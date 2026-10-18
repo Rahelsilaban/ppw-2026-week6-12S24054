@@ -1,125 +1,150 @@
-# SIPUS-Del
+﻿# SIPUS-Del — Tahap 2
 
-SIPUS-Del adalah Sistem Informasi Perpustakaan Kampus untuk tugas mandiri mata kuliah Pemrograman & Pengujian Web. Aplikasi memakai arsitektur MVC, Laravel, SQLite, dan server-side rendering dengan Blade.
+Sistem Informasi Perpustakaan Kampus Del untuk tugas Minggu 6: katalog dan CRUD buku/kategori, transaksi peminjaman/pengembalian, statistik, pencarian, serta autentikasi pustakawan dengan sesi database.
 
-Dikembangkan dengan Laravel 13 / PHP 8.3; modul acuan memakai Laravel 11.
-
-## Fitur
-
-- CRUD buku dan kategori dengan tujuh action resource, implicit route model binding, dan validasi server.
-- ISBN serta kode kategori unik; penghapusan kategori yang masih memiliki buku ditolak dengan pesan yang jelas.
-- Daftar buku beserta kategori dan daftar kategori beserta jumlah buku, masing-masing 10 item per halaman.
-- Layout Blade bersama, Bootstrap 5 via CDN, navbar ungu, flash message, pesan validasi, input lama, dan konfirmasi hapus.
-- Factory Faker Indonesia dan seeder berisi 5 kategori serta 20 buku.
-- Eager loading untuk menghindari N+1 dan audit SQL opsional. Lihat [bukti audit SQL](docs/sql-audit.md).
-
-## Prasyarat
-
-- PHP 8.3 atau lebih baru beserta ekstensi yang disyaratkan Composer, termasuk PDO, `pdo_sqlite`, dan `sqlite3`.
-- Composer dan Git.
-- Folder `storage/` serta `bootstrap/cache/` dapat ditulis.
-- Koneksi internet untuk instalasi dependensi dan memuat CSS Bootstrap dari CDN.
-
-Node.js dan build Vite tidak diperlukan untuk halaman SIPUS-Del karena styling memakai Bootstrap CDN. Runtime verifikasi lokal menggunakan PHP 8.4.26, yang memenuhi persyaratan PHP 8.3+.
+**Versi proyek:** `composer.json` menggunakan Laravel **13** (`^13.0`) dan PHP **8.3+**, meskipun modul tugas mengacu pada Laravel 11. Dependensi proyek Minggu 5 dipertahankan; tidak dilakukan downgrade. Verifikasi lokal menggunakan PHP 8.4.26 dan MySQL 8.0.30.
 
 ## Instalasi
 
-Buka terminal pada folder proyek, lalu jalankan:
+Prasyarat: Composer, PHP dengan ekstensi yang diminta Composer termasuk `pdo_mysql`, MySQL, serta `pdo_sqlite`/`sqlite3` untuk pengujian. Folder `bootstrap/cache`, `storage/framework/cache/data`, `storage/framework/sessions`, `storage/framework/views`, dan `storage/logs` harus tersedia dan dapat ditulis.
 
 ```powershell
 composer install
-Copy-Item .env.example .env
+cp .env.example .env
 php artisan key:generate
-php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
+```
+
+Salin `.env.example` **hanya pada instalasi baru**. Pada PowerShell, `cp` adalah alias `Copy-Item`. Buat database `sipus_del` di MySQL dan sediakan pengguna yang berhak mengaksesnya. Sesuaikan kredensial lokal sendiri; contoh konfigurasi memakai `DB_CONNECTION=mysql`, `DB_DATABASE=sipus_del`, `DB_USERNAME=sipus`, password kosong sebagai placeholder, dan `SESSION_DRIVER=database`. Jangan menimpa `.env` yang sudah berfungsi.
+
+```powershell
+php artisan config:clear
+php artisan db:show
 php artisan migrate:fresh --seed
 php artisan serve
 ```
 
-Pada Linux/macOS, ganti `Copy-Item .env.example .env` dengan `cp .env.example .env`. Salin file contoh hanya pada instalasi baru agar konfigurasi lokal yang sudah ada tidak tertimpa. `migrate:fresh --seed` menghapus seluruh tabel lama, membuat skema baru, lalu memasukkan data contoh.
+`migrate:fresh --seed` menghapus seluruh tabel pada database yang dipilih. Gunakan untuk menyiapkan ulang data latihan. Buka http://127.0.0.1:8000. Bootstrap dimuat melalui CDN; build Node/Vite tidak diperlukan untuk halaman perpustakaan.
 
-Buka `http://127.0.0.1:8000`; halaman awal mengarah ke `/buku`. Pengaturan `.env.example` sudah memakai `DB_CONNECTION=sqlite`, `APP_FAKER_LOCALE=id_ID`, serta `SQL_AUDIT=false`. `DB_DATABASE` tidak perlu diisi karena Laravel menggunakan `database/database.sqlite` secara default. Tidak ada login karena autentikasi berada di luar cakupan tugas.
+## Akun dan data uji
 
-### Jika muncul “could not find driver”
+- Email: **pustakawan@del.ac.id**
+- Kata sandi: **password123**
+- Seeder berjalan berurutan: `KategoriSeeder`, `BukuSeeder`, `PustakawanSeeder`, `PeminjamanSeeder`.
+- Hasil: 5 kategori, 20 buku, 1 pustakawan, 2 peminjaman aktif, 1 pengembalian, total stok tersedia 55.
+- Buku pertama memiliki stok awal 1 dan satu pinjaman aktif, sehingga tersedia 0. Buku kedua memiliki stok awal 2 dan satu pinjaman aktif, sehingga tersedia 1. Buku lain memiliki stok awal 3; riwayat yang sudah dikembalikan tidak mengurangi stok tersedia.
 
-Periksa konfigurasi CLI dengan `php --ini`, lalu aktifkan `pdo_sqlite` dan `sqlite3` pada `php.ini` yang digunakan. Pada lingkungan lokal tugas ini, driver tersedia tetapi belum aktif secara bawaan. Alternatif sementara tanpa mengubah konfigurasi sistem:
+## Penggunaan
 
-```powershell
-php -d extension=pdo_sqlite -d extension=sqlite3 artisan migrate:fresh --seed
-php -d extension=pdo_sqlite -d extension=sqlite3 vendor/bin/phpunit
+Katalog dan detail buku/kategori boleh dibaca publik. Masuk melalui navbar untuk mengelola buku/kategori dan transaksi. Buka bagian **Pinjam** pada baris buku, isi NIM dan nama, lalu kirim. Daftar **Peminjaman** menyediakan tombol **Kembalikan** pada pinjaman aktif.
+
+Pencarian mencakup judul, penulis, dan ISBN; kategori dapat digabungkan dengan pencarian. Kata pencarian terakhir disimpan pada `last_search` dan digunakan kembali ketika parameter pencarian tidak diberikan. Kirim pencarian kosong untuk menghapusnya. `last_borrower` mengisi ulang NIM/nama dari transaksi terakhir yang berhasil.
+
+Navbar menampilkan nama pustakawan dan waktu login sesuai zona waktu aplikasi. Keluar menggunakan POST dan CSRF; sesi diinvalidasi dan token CSRF dibuat ulang.
+
+## Struktur dan ERD
+
+- Model: `Buku`, `Kategori`, `Peminjaman`, `User`.
+- Controller: `BukuController`, `KategoriController`, `PeminjamanController`, `AuthController`.
+- View: `resources/views/buku`, `kategori`, `peminjaman`, `auth`, dan komponen layout Bootstrap bersama.
+- Rute: `buku.*`, `kategori.*`, `peminjaman.index`, `peminjaman.pinjam`, `peminjaman.kembali`, `login`, `login.store`, `logout`.
+- Semua rute create/store/edit/update/destroy buku dan kategori, pinjam, kembali, daftar peminjaman, serta logout memakai middleware `auth`.
+- Model Peminjaman menetapkan nama tabel `peminjamans` secara eksplisit agar tidak mengikuti tebakan plural bahasa Inggris.
+
+```mermaid
+erDiagram
+    kategoris ||--o{ bukus : memiliki
+    bukus ||--o{ peminjamans : dipinjam
+    kategoris {
+        bigint id PK
+        string kode_kategori UK
+        string nama_kategori
+    }
+    bukus {
+        bigint id PK
+        bigint kategori_id FK
+        string isbn UK
+        string judul
+        string penulis
+        string penerbit
+        smallint tahun_terbit
+        int stok
+        text sinopsis
+    }
+    peminjamans {
+        bigint id PK
+        string kode_pinjam UK
+        bigint buku_id FK
+        string nim_peminjam
+        string nama_peminjam
+        date tanggal_pinjam
+        date tanggal_jatuh_tempo
+        date tanggal_kembali
+        enum status
+    }
 ```
 
-Untuk menjalankan server tanpa mengubah `php.ini`, gunakan server PHP langsung agar opsi ekstensi diterapkan pada proses yang melayani request:
+Ketiga tabel memiliki timestamps. FK kategori memakai `restrict`, sementara penghapusan buku menghapus riwayat peminjamannya melalui `cascadeOnDelete`, sesuai spesifikasi tugas. `users` menyimpan akun pustakawan; `sessions` menyimpan sesi login database. Identitas peminjam disimpan langsung sebagai NIM/nama pada peminjaman.
+
+## Transaksi ACID dan kueri
+
+- **Atomicity:** pengurangan stok dan pembuatan pinjaman berada dalam satu `DB::transaction(..., 3)`. Kegagalan insert memicu rollback, termasuk pengurangan stok sebelumnya.
+- **Consistency:** stok nol ditolak; NIM dinormalisasi trim dan uppercase; satu NIM tidak dapat meminjam buku yang sama selama pinjaman sebelumnya aktif. Kode pinjam unik dan foreign key menjaga referensi data.
+- **Isolation:** pinjam mengunci baris buku dengan `lockForUpdate`. Kembali mengunci buku kemudian peminjaman, memeriksa status, dan hanya menambah stok satu kali. Urutan penguncian buku lebih dahulu dipakai untuk mengurangi deadlock; Laravel diberi tiga percobaan transaksi.
+- **Durability:** perubahan di-commit ke MySQL. Jaminan ketahanan terhadap kegagalan perangkat bergantung pada konfigurasi penyimpanan/MySQL.
+
+`QueryException` dicatat dengan awalan `[DB EXCEPTION PINJAM]` atau `[DB EXCEPTION KEMBALI]`; antarmuka hanya menerima pesan umum. Penolakan aturan bisnis memakai flash error; transaksi sukses memakai flash success. ID yang tidak ditemukan menghasilkan 404.
+
+Katalog memakai eager loading `with('kategori')`, `withCount('peminjamans')`, `when()`, grup `where` untuk tiga kondisi pencarian, serta `paginate(10)->withQueryString()`. Statistik global memakai empat kueri `DB::table`. Delapan kueri data katalog: tiga kueri pagination/eager loading, satu daftar pilihan kategori, dan empat statistik. Jumlahnya tidak bertambah satu per buku. Audit Minggu 5 di `docs/sql-audit.md` adalah catatan historis sebelum penambahan filter/statistik.
+
+## Pengujian dan bukti
 
 ```powershell
-cd public
-php -d extension=pdo_sqlite -d extension=sqlite3 -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
-```
-
-## Struktur MVC
-
-| Bagian | Lokasi | Tanggung jawab |
-| --- | --- | --- |
-| Model | `app/Models/Buku.php`, `Kategori.php` | `$fillable`, `HasFactory`, relasi belongsTo/hasMany |
-| Controller | `app/Http/Controllers/BukuController.php`, `KategoriController.php` | Kueri, validasi, perubahan data, redirect, flash |
-| View | `resources/views/buku/`, `kategori/` | Halaman index, create, edit, show; partial form |
-| Layout | `resources/views/components/layout.blade.php` | Kerangka HTML, navbar, CSS Bootstrap, flash |
-| Route | `routes/web.php` | Dua `Route::resource` dan redirect `/` |
-| Skema/data contoh | `database/migrations/`, `factories/`, `seeders/` | Tabel, relasi database, dan data pengujian |
-| Konfigurasi audit | `config/sql_audit.php`, `AppServiceProvider::boot()` | Flag env, DB::listen, dan pencatatan log |
-| Pengujian | `tests/Feature/` | Controller, seeder, render Blade, dan audit SQL |
-
-View tidak menjalankan kueri SQL. Daftar buku memakai `Buku::with('kategori')->latest()->paginate(10)`, sedangkan daftar kategori memakai `Kategori::withCount('bukus')->paginate(10)`. `Paginator::useBootstrapFive()` didaftarkan dalam `AppServiceProvider`.
-
-## Audit SQL
-
-Atur `SQL_AUDIT=true`, `LOG_LEVEL=debug`, dan `LOG_CHANNEL=single` pada `.env`, jalankan `php artisan config:clear`, lalu buka `/buku`. Baris `SQL audit` akan tercatat di `storage/logs/laravel.log`. Saring hanya tabel `bukus` dan `kategoris`; untuk 10 buku, eager loading menghasilkan 3 kueri, sedangkan pengukuran lazy loading sementara menghasilkan 12 kueri.
-
-Setelah pengukuran, kembalikan `SQL_AUDIT=false` dan jalankan `php artisan config:clear`. Kondisi kode akhir tetap menggunakan eager loading. SQL audit mencatat nilai parameter aktual, sehingga hanya diaktifkan saat pemeriksaan. Log asli tidak masuk Git; metode dan bukti tersaring tersedia di [docs/sql-audit.md](docs/sql-audit.md).
-
-## Pengujian dan Hasil Verifikasi
-
-Setelah ekstensi SQLite aktif:
-
-```powershell
-php artisan migrate:fresh --seed
-php artisan route:list
-php vendor/bin/phpunit
-php vendor/bin/pint --test app database routes tests config/sql_audit.php
+php artisan test
+php artisan route:list -v --except-vendor
+php vendor/bin/pint --test app database routes tests lang
 php artisan view:cache
 php artisan view:clear
 ```
 
-Pengujian memakai SQLite in-memory dari `phpunit.xml`, sehingga tidak mengubah data aplikasi. Jika driver CLI belum aktif, gunakan opsi `-d extension=pdo_sqlite -d extension=sqlite3` seperti contoh di atas. Perintah `php artisan test` juga dapat dipakai setelah ekstensi diaktifkan di `php.ini`.
+`phpunit.xml` memaksa `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`, dan `DB_URL` kosong. Test `RefreshDatabase` berjalan pada SQLite sementara, terpisah dari MySQL pengembangan. Jangan mengubah koneksi test menjadi database pengembangan.
 
-Hasil verifikasi akhir pada 9 Oktober 2026:
+Hasil verifikasi 18 Oktober 2026:
 
 | Pemeriksaan | Hasil |
 | --- | --- |
-| `migrate:fresh --seed` | Sukses; 5 kategori dan 20 buku |
-| Rute resource | 14 rute: 7 buku dan 7 kategori; redirect `/` dan rute bawaan framework dihitung terpisah |
-| PHPUnit | 22 tests, 659 assertions, seluruhnya lulus |
-| Create buku valid | Berhasil tersimpan |
-| ISBN duplikat | Ditolak pada store/update |
-| Stok -1 | Ditolak |
-| Judul kurang dari 5 karakter | Ditolak |
-| Update tanpa mengubah ISBN | Berhasil tanpa error unique |
-| Hapus kategori yang mempunyai buku | Ditolak dengan flash error; data tetap tersimpan |
-| Render Blade | Delapan halaman CRUD, data kosong, pagination, error/old input, flash, dan escaping lulus |
-| Eager loading | 3 kueri; dibandingkan 12 kueri lazy loading sementara |
-| Format dan kompilasi view | Pint dan `view:cache` lulus |
+| MySQL `db:show` | MySQL 8.0.30, database sipus_del, pengguna sipus |
+| Migrasi dan seeder | Berhasil; data sesuai rincian di atas |
+| Render katalog menggunakan MySQL | HTTP 200 |
+| PHPUnit | 30 test, 746 assertion lulus |
+| Stok nol | Ditolak, stok tetap 0, tidak ada pinjaman baru |
+| NIM ganda termasuk variasi huruf/spasi | Ditolak, stok tidak berkurang lagi |
+| Pengembalian dan pengembalian berulang | Stok bertambah sekali; pengembalian kedua ditolak |
+| Insert gagal setelah decrement | Kode duplikat memicu rollback; stok tetap konsisten |
+| Filter gabungan dan eager loading | Filter kategori tetap berlaku; kueri tetap terbatas |
+| Login/logout | Regenerasi ID sesi, timestamp, invalidasi sesi, regenerasi token lulus |
+| Cookie email | HttpOnly dan masa berlaku 7 hari terverifikasi lewat response test |
+| Rute tamu | Seluruh rute mutasi dan daftar peminjaman redirect ke login |
+| Blade | Kompilasi view berhasil |
 
-`git status --short` harus kosong setelah commit. `git ls-files -- .env 'vendor/*'` tidak boleh menghasilkan output; `.env`, `vendor/`, database SQLite lokal, cache hasil kompilasi, serta log tidak disertakan dalam commit.
+SQLite tidak membuktikan perilaku penguncian baris MySQL. Untuk pemeriksaan konkurensi manual, gunakan dua sesi browser/pustakawan dan buku dengan stok 1: kirim dua peminjaman dengan NIM berbeda hampir bersamaan. Hasil yang diharapkan: satu berhasil, satu ditolak, stok akhir 0, hanya satu pinjaman baru. Pengujian konkurensi MySQL ini belum dijalankan otomatis.
 
-## Keputusan Desain
+### Screenshot yang diambil manual
 
-- Gaya modul dipertahankan: properti klasik `protected $fillable`, `$request->validate()` dalam controller, dan `Route::resource`. Tidak memakai Form Request, PHP Attributes untuk konfigurasi model, starter kit, AI SDK, atau Boost.
-- Struktur proyek Laravel 13 dipertahankan: konfigurasi aplikasi/routing ada di `bootstrap/app.php` dan daftar provider di `bootstrap/providers.php`; tidak menambahkan file Kernel atau provider routing lama. Migrasi anonymous class tidak memerlukan perubahan struktur untuk tugas ini.
-- Model `User` bawaan proyek Laravel 13 semula memakai Attributes `Fillable` dan `Hidden`; keduanya diganti menjadi `$fillable` dan `$hidden` dengan isi yang sama sesuai gaya modul. Session JSON bawaan tetap dipertahankan; pengujian pesan validasi mengikuti redirect langsung sebelum memeriksa HTML.
-- Tabel bawaan users, cache, dan jobs dipertahankan karena session, cache, dan queue menggunakan database. Seeder akun contoh diganti dengan data perpustakaan karena autentikasi tidak diminta.
-- Kategori dibuat sebelum buku. Foreign key `kategori_id` memakai `restrict`; controller memeriksa keberadaan buku sebelum menghapus kategori.
-- SQLite tidak menegakkan panjang string dan unsigned seperti beberapa database lain. Deklarasi migrasi mengikuti modul, sementara validasi controller menegakkan batas panjang dan nilai input. ISBN menerima 10–13 digit sesuai aturan tugas; factory menghasilkan ISBN-13 unik. Judul boleh sama.
-- Faker dipanggil dengan locale `id_ID` secara eksplisit agar konsisten walau `.env` lama berbeda. Seeder membuat empat buku per kategori, setelah kelima kategori tersedia; judul mengikuti nama kategori. Seeder ditujukan untuk database kosong melalui `migrate:fresh --seed`, bukan untuk dijalankan berulang pada data yang sama.
-- Setiap resource berbagi partial form create/edit. Semua output memakai `{{ }}`, form memakai CSRF/method spoofing, dan hapus memakai konfirmasi browser. Detail kategori menampilkan jumlah buku; filter dan pencarian tidak ditambahkan karena tidak diminta.
-- Bootstrap 5.3.8 CSS menggunakan CDN dengan integrity hash. Navigasi sederhana tidak memerlukan JavaScript Bootstrap; font memakai default Bootstrap. Warna navbar `#4C1D95` dan hover `#3B0764` mengikuti modul.
-- Audit SQL memakai file konfigurasi agar flag env dapat di-cache dan nonaktif secara default. Eager loading dipertahankan setelah eksperimen lazy loading.
-- Repository Git belum tersedia pada awal tugas; commit Tahap 1 sekaligus mencatat kerangka proyek yang telah terinstal. Setiap tahap berikutnya memiliki satu commit Conventional Commits.
+Placeholder berikut belum berisi gambar. Simpan screenshot Anda pada lokasi yang ditentukan:
+
+1. Peminjaman sukses: flash sukses, stok berkurang, baris peminjaman muncul.
+   ![Peminjaman sukses](docs/screenshots/peminjaman-sukses.png)
+2. Pengembalian sukses: flash sukses, status dikembalikan, stok bertambah.
+   ![Pengembalian sukses](docs/screenshots/pengembalian-sukses.png)
+3. Penolakan stok 0: flash penolakan dan stok tetap 0.
+   ![Penolakan stok nol](docs/screenshots/stok-nol.png)
+4. Audit cookie: DevTools → Application/Storage → Cookies setelah login.
+   ![Inspeksi cookie HttpOnly](docs/screenshots/cookie-httponly.png)
+
+### Audit cookie dan sesi
+
+Login menjalankan `Auth::attempt`, regenerasi sesi, menyimpan `login_timestamp`, dan mengantrekan `del_last_user_email` selama 10080 menit. Cookie email menggunakan HttpOnly bawaan CookieJar dan dienkripsi middleware Laravel; isinya di DevTools tidak harus berupa email yang dapat dibaca. Periksa HttpOnly, tanggal kedaluwarsa sekitar tujuh hari, path, SameSite, dan cookie sesi pada DevTools. Cookie sesi menggunakan HttpOnly sesuai konfigurasi session proyek. Flag Secure mengikuti konfigurasi/HTTPS; lingkungan HTTP lokal tidak membuktikan konfigurasi produksi.
+
+Opsi **Ingat saya** mengaktifkan remember cookie Laravel. Setelah logout, cookie email tetap ada untuk mengisi form login, tetapi sesi autentikasi lama tidak berlaku. Verifikasi manual dengan membuka kembali halaman peminjaman setelah logout: harus diarahkan ke login.
+
+`.env`, `vendor/`, log, dan cache tidak boleh masuk commit. Pekerjaan disimpan pada branch `week6-db-session`; tidak dilakukan git push.
