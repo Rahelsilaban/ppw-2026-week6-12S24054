@@ -32,6 +32,9 @@
         @if (session('error'))
             <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
         @endif
+        @if ($errors->any())
+            <div class="alert alert-danger" role="alert"><ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+        @endif
         {{ $slot }}
     </main>
     <footer class="container pb-4 text-secondary small">SIPUS-Del · Sistem Informasi Perpustakaan Kampus</footer>

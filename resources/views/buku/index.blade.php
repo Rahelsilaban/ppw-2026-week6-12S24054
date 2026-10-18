@@ -24,6 +24,7 @@
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Hapus {{ $buku->judul }}">Hapus</button>
                         </form>
+                                @include('buku._pinjam')
                             </td>
                         </tr>
                     @empty
