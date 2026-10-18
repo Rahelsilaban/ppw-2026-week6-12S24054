@@ -6,6 +6,7 @@ use App\Models\Buku;
 use App\Models\Kategori;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -26,10 +27,10 @@ class BukuController extends Controller
             ->latest()->paginate(10)->withQueryString();
         $kategoris = Kategori::orderBy('nama_kategori')->get();
         $statistik = [
-            'Total Judul Buku' => \Illuminate\Support\Facades\DB::table('bukus')->count(),
-            'Total Stok Tersedia' => \Illuminate\Support\Facades\DB::table('bukus')->sum('stok'),
-            'Total Buku Sedang Dipinjam' => \Illuminate\Support\Facades\DB::table('peminjamans')->where('status', 'dipinjam')->count(),
-            'Total Dikembalikan' => \Illuminate\Support\Facades\DB::table('peminjamans')->where('status', 'dikembalikan')->count(),
+            'Total Judul Buku' => DB::table('bukus')->count(),
+            'Total Stok Tersedia' => DB::table('bukus')->sum('stok'),
+            'Total Buku Sedang Dipinjam' => DB::table('peminjamans')->where('status', 'dipinjam')->count(),
+            'Total Dikembalikan' => DB::table('peminjamans')->where('status', 'dikembalikan')->count(),
         ];
 
         return view('buku.index', compact('bukus', 'kategoris', 'statistik', 'search'));

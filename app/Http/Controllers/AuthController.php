@@ -22,6 +22,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         session(['login_timestamp' => now()->format('d-m-Y H:i:s')]);
         Cookie::queue('del_last_user_email', $request->email, 10080);
+
         return redirect()->intended(route('buku.index'));
     }
 
@@ -30,6 +31,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }

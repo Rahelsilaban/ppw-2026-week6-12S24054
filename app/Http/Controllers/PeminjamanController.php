@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Buku;
 use App\Models\Peminjaman;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ class PeminjamanController extends Controller
     public function index()
     {
         $peminjamans = Peminjaman::with('buku')->latest()->paginate(10);
+
         return view('peminjaman.index', compact('peminjamans'));
     }
 
@@ -50,13 +52,17 @@ class PeminjamanController extends Controller
                     'status' => 'dipinjam',
                 ]);
             }, 3);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (QueryException $e) {
             Log::error('[DB EXCEPTION PINJAM]: '.$e->getMessage());
+
             return back()->withInput()->with('error', 'Peminjaman gagal karena gangguan database. Silakan coba lagi.');
         } catch (RuntimeException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
         $request->session()->put('last_borrower', $data);
+
         return back()->with('success', 'Buku berhasil dipinjam. Batas pengembalian 7 hari.');
     }
 
@@ -74,12 +80,16 @@ class PeminjamanController extends Controller
                 $peminjaman->update(['status' => 'dikembalikan', 'tanggal_kembali' => today()]);
                 $buku->increment('stok');
             }, 3);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (QueryException $e) {
             Log::error('[DB EXCEPTION KEMBALI]: '.$e->getMessage());
+
             return back()->with('error', 'Pengembalian gagal karena gangguan database. Silakan coba lagi.');
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
+
         return back()->with('success', 'Buku berhasil dikembalikan.');
     }
 }

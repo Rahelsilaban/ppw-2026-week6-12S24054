@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Buku;
 use App\Models\Peminjaman;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,12 +15,35 @@ class PeminjamanTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(\App\Models\User::factory()->create());
+        $this->actingAs(User::factory()->create());
     }
 
     private function pinjam(Buku $buku, string $nim = '12s24054')
     {
         return $this->post(route('peminjaman.pinjam', $buku), ['nim_peminjam' => $nim, 'nama_peminjam' => 'Elisabet']);
+    }
+
+    public function test_kegagalan_insert_mengembalikan_stok(): void
+    {
+        $buku = Buku::factory()->create(['stok' => 2]);
+        $this->pinjam($buku)->assertSessionHas('success');
+        $kode = Peminjaman::firstOrFail()->kode_pinjam;
+        Peminjaman::creating(function ($peminjaman) use ($kode) {
+            $peminjaman->kode_pinjam = $kode;
+        });
+        try {
+            $this->pinjam($buku, '12S24999')->assertSessionHas('error', 'Peminjaman gagal karena gangguan database. Silakan coba lagi.');
+            $this->assertSame(1, $buku->fresh()->stok);
+            $this->assertDatabaseCount('peminjamans', 1);
+        } finally {
+            Peminjaman::flushEventListeners();
+        }
+    }
+
+    public function test_id_tidak_ditemukan_menghasilkan_404(): void
+    {
+        $this->post(route('peminjaman.pinjam', 999), ['nim_peminjam' => '12S24054', 'nama_peminjam' => 'Elisabet'])->assertNotFound();
+        $this->post(route('peminjaman.kembali', 999))->assertNotFound();
     }
 
     public function test_stok_nol_ditolak(): void
