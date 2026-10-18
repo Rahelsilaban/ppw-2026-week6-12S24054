@@ -128,19 +128,6 @@ Hasil verifikasi 18 Oktober 2026:
 
 SQLite tidak membuktikan perilaku penguncian baris MySQL. Untuk pemeriksaan konkurensi manual, gunakan dua sesi browser/pustakawan dan buku dengan stok 1: kirim dua peminjaman dengan NIM berbeda hampir bersamaan. Hasil yang diharapkan: satu berhasil, satu ditolak, stok akhir 0, hanya satu pinjaman baru. Pengujian konkurensi MySQL ini belum dijalankan otomatis.
 
-### Screenshot yang diambil manual
-
-Placeholder berikut belum berisi gambar. Simpan screenshot Anda pada lokasi yang ditentukan:
-
-1. Peminjaman sukses: flash sukses, stok berkurang, baris peminjaman muncul.
-   ![Peminjaman sukses](docs/screenshots/peminjaman-sukses.png)
-2. Pengembalian sukses: flash sukses, status dikembalikan, stok bertambah.
-   ![Pengembalian sukses](docs/screenshots/pengembalian-sukses.png)
-3. Penolakan stok 0: flash penolakan dan stok tetap 0.
-   ![Penolakan stok nol](docs/screenshots/stok-nol.png)
-4. Audit cookie: DevTools → Application/Storage → Cookies setelah login.
-   ![Inspeksi cookie HttpOnly](docs/screenshots/cookie-httponly.png)
-
 ### Audit cookie dan sesi
 
 Login menjalankan `Auth::attempt`, regenerasi sesi, menyimpan `login_timestamp`, dan mengantrekan `del_last_user_email` selama 10080 menit. Cookie email menggunakan HttpOnly bawaan CookieJar dan dienkripsi middleware Laravel; isinya di DevTools tidak harus berupa email yang dapat dibaca. Periksa HttpOnly, tanggal kedaluwarsa sekitar tujuh hari, path, SameSite, dan cookie sesi pada DevTools. Cookie sesi menggunakan HttpOnly sesuai konfigurasi session proyek. Flag Secure mengikuti konfigurasi/HTTPS; lingkungan HTTP lokal tidak membuktikan konfigurasi produksi.
