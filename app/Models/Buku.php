@@ -10,6 +10,11 @@ class Buku extends Model
 {
     use HasFactory;
 
+    public function peminjamans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Peminjaman::class);
+    }
+
     protected $fillable = [
         'isbn',
         'judul',
