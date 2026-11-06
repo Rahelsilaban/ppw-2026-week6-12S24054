@@ -230,3 +230,4 @@ class BukuApiController extends Controller
         ], 200);
     }
 }
+

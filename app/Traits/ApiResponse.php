@@ -59,3 +59,4 @@ trait ApiResponse
         return response()->json($payload, $statusCode);
     }
 }
+

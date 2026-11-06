@@ -56,3 +56,4 @@ class PeminjamanResource extends JsonResource
         ];
     }
 }
+

@@ -59,3 +59,4 @@ class GithubConsumerTest extends TestCase
             ]);
     }
 }
+

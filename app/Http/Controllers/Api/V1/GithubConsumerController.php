@@ -94,3 +94,4 @@ class GithubConsumerController extends Controller
         }
     }
 }
+

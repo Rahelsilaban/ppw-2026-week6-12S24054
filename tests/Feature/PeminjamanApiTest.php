@@ -176,3 +176,4 @@ class PeminjamanApiTest extends TestCase
         $this->assertEquals(2, $this->buku->fresh()->stok);
     }
 }
+
