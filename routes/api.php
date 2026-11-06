@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BukuApiController;
+use App\Http\Controllers\Api\V1\GithubConsumerController;
 use App\Http\Controllers\Api\V1\PeminjamanApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,11 +19,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login'])->name('api.v1.auth.login');
 
     // ----------------------------------------------------
-    // Katalog Buku Publik
+    // Katalog Buku Publik & REST Consumers
     // ----------------------------------------------------
     Route::get('/bukus', [BukuApiController::class, 'index'])->name('api.v1.bukus.index');
     Route::get('/bukus/{id}', [BukuApiController::class, 'show'])->name('api.v1.bukus.show');
     Route::get('/bukus/{id}/referensi-eksternal', [BukuApiController::class, 'referensiEksternal'])->name('api.v1.bukus.referensi');
+    Route::get('/github/repo', [GithubConsumerController::class, 'getRepo'])->name('api.v1.github.repo');
 
     // ----------------------------------------------------
     // Endpoint Privat (Memerlukan Bearer Token Sanctum)
