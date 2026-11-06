@@ -4,7 +4,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PeminjamanController;
+use App\Http\Controllers\Soap\LibrarySoapController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/soap/sipus.wsdl', [LibrarySoapController::class, 'wsdl'])->name('soap.wsdl');
+Route::post('/soap/sipus', [LibrarySoapController::class, 'handle'])->name('soap.handle');
 
 Route::get('/', function () {
     return redirect()->route('buku.index');
