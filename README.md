@@ -7,7 +7,7 @@ Sistem Informasi Perpustakaan Institut Teknologi Del (SIPUS-Del) Tahap 3 merupak
 ## 1. Identitas Mahasiswa
 - **Nama Lengkap:** Rahel Silaban
 - **NIM:** 12S24054
-- **Kelas:** 12S1 (S1 Sistem Informasi 2024)
+- **Kelas:** 13SI2 (S1 Sistem Informasi 2024)
 - **Program Studi:** Sarjana Sistem Informasi
 - **Mata Kuliah:** 12S3101 - Pengembangan Pemrograman Web (PPW)
 - **Institut:** Institut Teknologi Del
