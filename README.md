@@ -136,6 +136,9 @@ Seluruh pengujian dijalankan dan divalidasi secara langsung pada sistem aplikasi
       </SOAP-ENV:Body>
   </SOAP-ENV:Envelope>
   ```
+- **Bukti Screenshot Postman:**
+  ![Bukti Pengujian SOAP Bebas Pustaka](docs/screenshots/01-soap-clearance-success.jpg)
+
 - **SOAP Fault (Malformed XML):** Mengirimkan XML cacat menghasilkan HTTP 500 dengan SOAP Fault:
   ```xml
   <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -159,22 +162,31 @@ Seluruh pengujian dijalankan dan divalidasi secara langsung pada sistem aplikasi
     "user": { "id": 1, "name": "Pustakawan", "email": "pustakawan@del.ac.id" }
   }
   ```
+- **Bukti Screenshot Postman:**
+  ![Bukti Pengujian Login Sanctum Bearer Token](docs/screenshots/02-auth-login-token.jpg)
+
 - **Penolakan Galat (401 RFC 7807):** Login gagal atau request tanpa token mengembalikan `application/problem+json` dengan status 401.
 
 ### 5.3 Skenario 3: GET Katalog Buku dengan Pagination & HATEOAS
 - **GET /api/v1/bukus?page=1&per_page=5** menghasilkan daftar koleksi buku dengan pagination `meta` dan tautan HATEOAS kontekstual:
   - Buku dengan `stok > 0` memuat `_links.pinjam_buku`.
   - Buku dengan `stok = 0` tidak menyertakan `_links.pinjam_buku`.
+- **Bukti Screenshot Postman:**
+  ![Bukti Pengujian Detail Buku dan HATEOAS](docs/screenshots/03-katalog-detail-hateoas.jpg)
 
 ### 5.4 Skenario 4: POST Buku Baru dengan 201 Created & Header Location
 - **POST /api/v1/bukus** dengan header `Authorization: Bearer <token>`:
   - Status: `201 Created`
   - Header: `Location: http://127.0.0.1:8000/api/v1/bukus/21`
   - Body: JSON representasi BukuResource lengkap beserta relasi kategori.
+- **Bukti Screenshot Postman:**
+  ![Bukti Pengujian POST Buku Baru 201 Created](docs/screenshots/04-post-buku-201-location.jpg)
 
 ### 5.5 Skenario 5: Perbedaan PUT (Full Replacement) dan PATCH (Partial Update)
 - **PUT /api/v1/bukus/{id}:** Menolak request jika salah satu atribut wajib dihilangkan (menghasilkan 422 Problem Details). Berhasil memperbarui data hanya jika seluruh atribut buku dikirimkan.
 - **PATCH /api/v1/bukus/{id}:** Berhasil memperbarui sebagian atribut saja (misalnya hanya mengirimkan `{"stok": 15}`) tanpa menghilangkan atau membatalkan atribut judul/penulis/penerbit lainnya.
+- **Bukti Screenshot Postman:**
+  ![Bukti Pengujian PUT Buku Full Replacement](docs/screenshots/05-put-buku-replacement.jpg)
 
 ### 5.6 Skenario 6: Transaksi Peminjaman ACID, Penolakan Stok Habis (422), dan Konflik (409)
 - **Peminjaman Berhasil (201 Created):** Stok buku didekremen secara aman, transaksi tercatat dengan kode pinjam unik, mengembalikan header `Location`.
