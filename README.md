@@ -184,24 +184,25 @@ Seluruh pengujian dijalankan dan divalidasi secara langsung pada sistem aplikasi
 
 ### 5.5 Skenario 5: Perbedaan PUT (Full Replacement) dan PATCH (Partial Update)
 - **PUT /api/v1/bukus/{id}:** Menolak request jika salah satu atribut wajib dihilangkan (menghasilkan 422 Problem Details). Berhasil memperbarui data hanya jika seluruh atribut buku dikirimkan.
-- **PATCH /api/v1/bukus/{id}:** Berhasil memperbarui sebagian atribut saja (misalnya hanya mengirimkan `{"stok": 15}`) tanpa menghilangkan atau membatalkan atribut judul/penulis/penerbit lainnya.
+- **PATCH /api/v1/bukus/{id}:** Berhasil memperbarui sebagian atribut saja (misalnya hanya mengirimkan `{"stok": 18}`) tanpa menghilangkan atau membatalkan atribut judul/penulis/penerbit lainnya.
 - **Bukti Screenshot Postman:**
-  ![Bukti Pengujian PUT Buku Full Replacement](docs/screenshots/05-put-buku-replacement.jpg)
+  - **PUT Buku (Full Replacement):**  
+    ![Bukti Pengujian PUT Buku Full Replacement](docs/screenshots/05-put-buku-replacement.jpg)
+  - **PATCH Buku (Partial Update):**  
+    ![Bukti Pengujian PATCH Buku Partial Update](docs/screenshots/06-patch-buku-partial.jpg)
 
 ### 5.6 Skenario 6: Transaksi Peminjaman ACID, Penolakan Stok Habis (422), dan Konflik (409)
 - **Peminjaman Berhasil (201 Created):** Stok buku didekremen secara aman, transaksi tercatat dengan kode pinjam unik, mengembalikan header `Location`.
-- **Penolakan Stok Habis (422 RFC 7807):** Jika stok buku bernilai 0, transaksi otomatis dibatalkan (*rollback*) dengan status 422:
-  ```json
-  {
-    "type": "https://tools.ietf.org/html/rfc4918#section-11.2",
-    "title": "Unprocessable Content",
-    "status": 422,
-    "detail": "Stok buku habis. Transaksi peminjaman ditolak.",
-    "instance": "/api/v1/peminjamans"
-  }
-  ```
+- **Penolakan Stok Habis (422 RFC 7807):** Jika stok buku bernilai 0, transaksi otomatis dibatalkan (*rollback*) dengan status 422 Problem Details.
 - **Penolakan Pinjaman Ganda (409 Conflict):** Jika mahasiswa dengan NIM yang sama masih memiliki pinjaman aktif untuk buku yang sama, transaksi ditolak dengan HTTP 409 Conflict Problem Details.
 - **Pengembalian Buku (200 OK):** Mengubah status menjadi `dikembalikan`, mengisi `tanggal_kembali`, dan menginkremen stok buku. Pengembalian kedua ditolak dengan HTTP 409 (*Double return prevention*).
+- **Bukti Screenshot Postman:**
+  - **Peminjaman Berhasil (Status 201 Created):**  
+    ![Bukti Pengujian Peminjaman Berhasil ACID](docs/screenshots/07-peminjaman-acid-sukses.jpg)
+  - **Penolakan Transaksi Peminjaman (Status 422 RFC 7807):**  
+    ![Bukti Pengujian Penolakan Peminjaman Problem Details](docs/screenshots/08-peminjaman-penolakan-422-409.jpg)
+  - **Pengembalian Buku Berhasil (Status 200 OK):**  
+    ![Bukti Pengujian Pengembalian Buku Sukses](docs/screenshots/09-pengembalian-buku-sukses.jpg)
 
 ### 5.7 Skenario 7: Pengujian REST API Consumer (OpenLibrary & GitHub API)
 - **OpenLibrary API:** Mengonsumsi metadata buku eksternal via ISBN dengan timeout 8 detik dan fallback otomatis yang transparan.
@@ -219,6 +220,8 @@ Seluruh pengujian dijalankan dan divalidasi secara langsung pada sistem aplikasi
     }
   }
   ```
+- **Bukti Screenshot Postman:**
+  ![Bukti Pengujian GitHub Consumer REST API](docs/screenshots/10-github-consumer-api.jpg)
 
 ---
 
